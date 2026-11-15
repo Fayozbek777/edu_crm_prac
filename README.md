@@ -1,76 +1,235 @@
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-# edu_crm_prac
+<pre>
+edu_crm_front/
+├── .env
+├── .env.example
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package.json
+├── package-lock.json
+├── README.md
+├── tsconfig.json
+├── tsconfig.app.json
+├── tsconfig.node.json
+├── vite.config.ts
+│
+├── public/
+│   └── vite.svg
+│
+├── node_modules/
+│
+└── src/
+    ├── App.css
+    ├── App.tsx
+    ├── index.css
+    ├── main.tsx
+    ├── vite-env.d.ts
+    │
+    ├── app/
+    │   ├── layouts/
+    │   │   ├── AuthLayout.tsx
+    │   │   └── MainLayout.tsx
+    │   ├── providers/
+    │   │   └── AppProviders.tsx
+    │   └── router/
+    │       ├── guards/
+    │       │   └── ProtectedRoute.tsx
+    │       └── Router.tsx
+    │
+    ├── components/
+    │   ├── button/
+    │   │   └── Button.tsx
+    │   ├── footer/
+    │   │   └── Footer.tsx
+    │   ├── navbar/
+    │   │   └── Navbar.tsx
+    │   └── sidebar/
+    │       └── Sidebar.tsx
+    │
+    ├── features/
+    │   ├── attendance/
+    │   │   ├── api/
+    │   │   │   └── attendance.api.ts
+    │   │   ├── model/
+    │   │   │   └── attendance.store.ts
+    │   │   ├── types/
+    │   │   │   └── attendance.types.ts
+    │   │   ├── ui/
+    │   │   │   ├── AttendanceCard.tsx
+    │   │   │   ├── AttendanceFilters.tsx
+    │   │   │   ├── AttendanceForm.tsx
+    │   │   │   └── AttendanceTable.tsx
+    │   │   └── index.ts
+    │   │
+    │   ├── auth/
+    │   │   ├── api/
+    │   │   │   └── auth.api.ts
+    │   │   ├── model/
+    │   │   │   ├── auth.model.ts
+    │   │   │   └── auth.store.ts
+    │   │   ├── types/
+    │   │   │   └── auth.types.ts
+    │   │   ├── ui/
+    │   │   │   ├── AuthCard.tsx
+    │   │   │   ├── AuthFilters.tsx
+    │   │   │   ├── AuthForm.tsx
+    │   │   │   └── AuthTable.tsx
+    │   │   └── index.ts
+    │   │
+    │   ├── courses/
+    │   │   ├── api/
+    │   │   │   └── courses.api.ts
+    │   │   ├── model/
+    │   │   │   └── courses.store.ts
+    │   │   ├── types/
+    │   │   │   └── courses.types.ts
+    │   │   ├── ui/
+    │   │   │   ├── CoursesCard.tsx
+    │   │   │   ├── CoursesFilters.tsx
+    │   │   │   ├── CoursesForm.tsx
+    │   │   │   └── CoursesTable.tsx
+    │   │   └── index.ts
+    │   │
+    │   ├── enrollments/
+    │   │   ├── api/
+    │   │   │   └── enrollments.api.ts
+    │   │   ├── model/
+    │   │   │   └── enrollments.store.ts
+    │   │   ├── types/
+    │   │   │   └── enrollments.types.ts
+    │   │   ├── ui/
+    │   │   │   ├── EnrollmentsCard.tsx
+    │   │   │   ├── EnrollmentsFilters.tsx
+    │   │   │   ├── EnrollmentsForm.tsx
+    │   │   │   └── EnrollmentsTable.tsx
+    │   │   └── index.ts
+    │   │
+    │   ├── groups/
+    │   │   ├── api/
+    │   │   │   └── groups.api.ts
+    │   │   ├── model/
+    │   │   │   └── groups.store.ts
+    │   │   ├── types/
+    │   │   │   └── groups.types.ts
+    │   │   ├── ui/
+    │   │   │   ├── GroupsCard.tsx
+    │   │   │   ├── GroupsFilters.tsx
+    │   │   │   ├── GroupsForm.tsx
+    │   │   │   └── GroupsTable.tsx
+    │   │   └── index.ts
+    │   │
+    │   ├── leads/
+    │   │   ├── api/
+    │   │   │   └── leads.api.ts
+    │   │   ├── model/
+    │   │   │   └── leads.store.ts
+    │   │   ├── types/
+    │   │   │   └── leads.types.ts
+    │   │   ├── ui/
+    │   │   │   ├── LeadsCard.tsx
+    │   │   │   ├── LeadsFilters.tsx
+    │   │   │   ├── LeadsForm.tsx
+    │   │   │   └── LeadsTable.tsx
+    │   │   └── index.ts
+    │   │
+    │   ├── payments/
+    │   │   ├── api/
+    │   │   │   └── payments.api.ts
+    │   │   ├── model/
+    │   │   │   └── payments.store.ts
+    │   │   ├── types/
+    │   │   │   └── payments.types.ts
+    │   │   ├── ui/
+    │   │   │   ├── PaymentsCard.tsx
+    │   │   │   ├── PaymentsFilters.tsx
+    │   │   │   ├── PaymentsForm.tsx
+    │   │   │   └── PaymentsTable.tsx
+    │   │   └── index.ts
+    │   │
+    │   ├── students/
+    │   │   ├── api/
+    │   │   │   └── students.api.ts
+    │   │   ├── model/
+    │   │   │   └── students.store.ts
+    │   │   ├── types/
+    │   │   │   └── students.types.ts
+    │   │   ├── ui/
+    │   │   │   ├── StudentsCard.tsx
+    │   │   │   ├── StudentsFilters.tsx
+    │   │   │   ├── StudentsForm.tsx
+    │   │   │   └── StudentsTable.tsx
+    │   │   └── index.ts
+    │   │
+    │   └── teachers/
+    │       ├── api/
+    │       │   └── teachers.api.ts
+    │       ├── model/
+    │       │   └── teachers.store.ts
+    │       ├── types/
+    │       │   └── teachers.types.ts
+    │       ├── ui/
+    │       │   ├── TeachersCard.tsx
+    │       │   ├── TeachersFilters.tsx
+    │       │   ├── TeachersForm.tsx
+    │       │   └── TeachersTable.tsx
+    │       └── index.ts
+    │
+    ├── pages/
+    │   ├── AttendancePage/
+    │   │   └── AttendancePage.tsx
+    │   ├── CoursesPage/
+    │   │   └── CoursesPage.tsx
+    │   ├── DashboardPage/
+    │   │   └── DashboardPage.tsx
+    │   ├── EnrollmentsPage/
+    │   │   └── EnrollmentsPage.tsx
+    │   ├── GroupsPage/
+    │   │   └── GroupsPage.tsx
+    │   ├── LeadsPage/
+    │   │   └── LeadsPage.tsx
+    │   ├── LoginPage/
+    │   │   └── LoginPage.tsx
+    │   ├── NotFoundPage/
+    │   │   └── NotFoundPage.tsx
+    │   ├── PaymentsPage/
+    │   │   └── PaymentsPage.tsx
+    │   ├── RegisterPage/
+    │   │   └── RegisterPage.tsx
+    │   ├── StudentDetailPage/
+    │   │   └── StudentDetailPage.tsx
+    │   ├── StudentsPage/
+    │   │   └── StudentsPage.tsx
+    │   └── TeachersPage/
+    │       └── TeachersPage.tsx
+    │
+    └── shared/
+        ├── api/
+        │   ├── client.ts
+        │   ├── endpoints.ts
+        │   ├── queryKeys.ts
+        │   └── types.ts
+        ├── constants/
+        │   ├── roles.ts
+        │   └── statuses.ts
+        ├── hooks/
+        │   ├── useDebounce.ts
+        │   ├── usePagination.ts
+        │   └── useSearchQuery.ts
+        ├── lib/
+        │   ├── cn.ts
+        │   ├── formatDate.ts
+        │   ├── formatMoney.ts
+        │   └── formatPhone.ts
+        └── ui/
+            ├── Button.tsx
+            ├── EmptyState.tsx
+            ├── ErrorState.tsx
+            ├── Input.tsx
+            ├── Modal.tsx
+            ├── Pagination.tsx
+            ├── SearchBar.tsx
+            ├── Select.tsx
+            ├── Spinner.tsx
+            ├── Table.tsx
+            └── Toast.tsx
+</pre>
