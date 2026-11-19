@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.5",
     "@tanstack/react-query": "^5.107.1",
+    "@usefy/use-pagination": "^1.1.0",
     "axios": "^1.21.1",
     "framer-motion": "^14.14.0",
     "lucide-react": "^1.73.0",
