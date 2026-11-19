@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { useAuthStore } from "@/features/auth/model/auth.store";
+import { useAuthStore } from "../../features/auth/model/auth.store";
 import { refreshAccess } from "./refreshAccess";
 import { logApiError } from "./error-handler";
 
