@@ -1,0 +1,82 @@
+export const endpoints = {
+  auth: {
+    login: "/auth/login/",
+    getMe: "/auth/me/",
+    updateMe: "/auth/me/",
+    fullUpdate: "/auth/me/",
+    updateAccess: "/auth/refresh/",
+    register: "/auth/register/",
+    getUsers: "/auth/users/",
+    createUser: "/auth/users/",
+    getOneUser: (id: number) => `/auth/users/${id}/`,
+    fullUserUpdate: (id: number) => `/auth/users/${id}/`,
+    partiallyUpdate: (id: number) => `/auth/users/${id}/`,
+    deleteUser: (id: number) => `/auth/users/${id}/`,
+  },
+
+  students: {
+    getStudents: "/students/",
+    addStudent: "/students/",
+    getStudent: (id: number) => `/students/${id}/`,
+    studentFullUpdate: (id: number) => `/students/${id}/`,
+    deleteStudent: (id: number) => `/students/${id}/`,
+  },
+
+  teachers: {
+    getTeachers: "/teachers/",
+    addTeacher: "/teachers/",
+    getTeacher: (id: number) => `/teachers/${id}/`,
+    teacherFullUpdate: (id: number) => `/teachers/${id}/`,
+    deleteTeacher: (id: number) => `/teachers/${id}/`,
+  },
+
+  courses: {
+    getCourses: "/courses/",
+    addCourse: "/courses/",
+    getCourse: (id: number) => `/courses/${id}/`,
+    courseFullUpdate: (id: number) => `/courses/${id}/`,
+    coursePartlyUpdate: (id: number) => `/courses/${id}/`,
+    deleteCourse: (id: number) => `/courses/${id}/`,
+  },
+  groups: {
+    getGroups: "/groups/",
+    addGroup: "/groups/",
+    getGroup: (id: number) => `/groups/${id}/`,
+    groupFullUpdate: (id: number) => `/groups/${id}/`,
+    groupPartlyUpdate: (id: number) => `/groups/${id}/`,
+    deleteGroup: (id: number) => `/groups/${id}/`,
+  },
+  enrollments: {
+    getEnrollments: "/enrollments/",
+    addEnrollment: "/enrollments/",
+    getEnrollment: (id: number) => `/enrollments/${id}/`,
+    enrollmentsFullUpdate: (id: number) => `/enrollments/${id}/`,
+    enrollmentsPartlyUpdate: (id: number) => `/enrollments/${id}/`,
+    deleteEnrollment: (id: number) => `/enrollments/${id}/`,
+  },
+  payments: {
+    getEnrollments: "/payments/",
+    recordPayments: "/payments/",
+    getPayment: (id: number) => `/payments/${id}/`,
+    paymentsFullUpdate: (id: number) => `/payments/${id}/`,
+    paymentsPartlyUpdate: (id: number) => `/payments/${id}/`,
+    deletePayment: (id: number) => `/payments/${id}/`,
+  },
+  attendance: {
+    getAttendances: "/attendance/",
+    pointAttendance: "/attendance/",
+    getAttendance: (id: number) => `/attendance/${id}/`,
+    AttendancesFullUpdate: (id: number) => `/attendance/${id}/`,
+    AttendancesPartlyUpdate: (id: number) => `/attendance/${id}/`,
+    deleteAttendance: (id: number) => `/attendance/${id}/`,
+  },
+
+  leads: {
+    getLeads: "/leads/",
+    createLead: "/leads/",
+    getOneLead: (id: number) => `/leads/${id}/`,
+    leadsFullUpdate: (id: number) => `/leads/${id}/`,
+    leadsPartlyUpdate: (id: number) => `/leads/${id}/`,
+    deleteLead: (id: number) => `/leads/${id}/`,
+  },
+};
