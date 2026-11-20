@@ -1,5 +1,5 @@
 // src/app/layouts/MainLayout.tsx
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -32,13 +32,17 @@ const NAV = [
 
 export function MainLayout() {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const [open, setOpen] = useState(false);
 
-  const onLogout = () => {
+  const onLogout = useCallback(() => {
     logout();
     navigate("/login", { replace: true });
-  };
+  }, [logout, navigate]);
+
+  const closeMenu = useCallback(() => setOpen(false), []);
+  const toggleMenu = useCallback(() => setOpen((v) => !v), []);
 
   const displayName =
     [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim() ||
@@ -51,27 +55,24 @@ export function MainLayout() {
     "?"
   ).toUpperCase();
 
-  const NavItems = ({ onNavigate }: { onNavigate?: () => void }) => (
-    <>
-      {NAV.map(({ to, label, icon: Icon }) => (
-        <NavLink
-          key={to}
-          to={to}
-          onClick={onNavigate}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive
-                ? "bg-blue-50 text-blue-700"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-            }`
-          }
-        >
-          <Icon className="w-4 h-4 shrink-0" />
-          <span className="truncate">{label}</span>
-        </NavLink>
-      ))}
-    </>
-  );
+  const renderNavItems = (onNavigate?: () => void) =>
+    NAV.map(({ to, label, icon: Icon }) => (
+      <NavLink
+        key={to}
+        to={to}
+        onClick={onNavigate}
+        className={({ isActive }) =>
+          `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            isActive
+              ? "bg-blue-50 text-blue-700"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          }`
+        }
+      >
+        <Icon className="w-4 h-4 shrink-0" />
+        <span className="truncate">{label}</span>
+      </NavLink>
+    ));
 
   return (
     <div className="min-h-dvh flex flex-col bg-gray-50">
@@ -80,12 +81,35 @@ export function MainLayout() {
         <div className="h-full px-3 sm:px-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
-              onClick={() => setOpen((v) => !v)}
+              onClick={toggleMenu}
               aria-label={open ? "Закрыть меню" : "Открыть меню"}
               aria-expanded={open}
+              aria-controls="mobile-sidebar"
               className="lg:hidden p-2 -ml-1 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
             >
-              {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              <AnimatePresence mode="wait" initial={false}>
+                {open ? (
+                  <motion.span
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <X className="w-5 h-5" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Menu className="w-5 h-5" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </button>
             <span className="text-base sm:text-lg font-bold text-gray-900 truncate">
               EduCRM
@@ -119,7 +143,7 @@ export function MainLayout() {
         {/* === Sidebar (desktop) === */}
         <aside className="hidden lg:flex flex-col w-60 shrink-0 bg-white border-r border-gray-200">
           <nav className="flex flex-col gap-1 p-3 sticky top-16">
-            <NavItems />
+            {renderNavItems()}
           </nav>
         </aside>
 
@@ -128,14 +152,17 @@ export function MainLayout() {
           {open && (
             <>
               <motion.div
+                key="backdrop"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                onClick={() => setOpen(false)}
+                onClick={closeMenu}
                 className="lg:hidden fixed inset-0 z-40 bg-gray-900/40 backdrop-blur-sm"
               />
               <motion.aside
+                key="drawer"
+                id="mobile-sidebar"
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
@@ -145,7 +172,7 @@ export function MainLayout() {
                 <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
                   <span className="font-semibold text-gray-900">EduCRM</span>
                   <button
-                    onClick={() => setOpen(false)}
+                    onClick={closeMenu}
                     aria-label="Закрыть меню"
                     className="p-2 -mr-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
                   >
@@ -154,7 +181,7 @@ export function MainLayout() {
                 </div>
 
                 <nav className="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
-                  <NavItems onNavigate={() => setOpen(false)} />
+                  {renderNavItems(closeMenu)}
                 </nav>
 
                 <div className="p-3 border-t border-gray-200">
@@ -175,7 +202,7 @@ export function MainLayout() {
                   </div>
                   <button
                     onClick={() => {
-                      setOpen(false);
+                      closeMenu();
                       onLogout();
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
