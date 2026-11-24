@@ -2,7 +2,18 @@
 import { useEffect, useState } from "react";
 import { useStudentsStore } from "../model/students.store";
 import type { Student } from "../types/students.types";
+import { STUDENT_STATUS, toOptions } from "../../../shared/constants/statuses";
 import type { StudentStatus } from "../../../shared/constants/statuses";
+import {
+  extractPhoneDigits,
+  formatPhone,
+  normalizePhone,
+} from "../../../shared/lib/formatPhone";
+import { formatEmail } from "../../../shared/lib/formatEmail";
+import { PhoneInput } from "../../../shared/ui/PhoneInput";
+
+const STATUS_OPTIONS = toOptions(STUDENT_STATUS);
+// [{ value: "ACTIVE", label: "Активен" }, ...]
 
 interface Props {
   student?: Student;
@@ -13,11 +24,11 @@ const empty = {
   first_name: "",
   last_name: "",
   middle_name: "",
-  phone: "",
-  parent_phone: "",
+  phone: "", // 9 цифр
+  parent_phone: "", // 9 цифр
   email: "",
   address: "",
-  status: "active" as StudentStatus,
+  status: "ACTIVE" as StudentStatus,
   notes: "",
 };
 
@@ -36,8 +47,8 @@ export function StudentsForm({ student, onClose }: Props) {
         first_name: student.first_name,
         last_name: student.last_name,
         middle_name: student.middle_name ?? "",
-        phone: student.phone,
-        parent_phone: student.parent_phone ?? "",
+        phone: extractPhoneDigits(student.phone),
+        parent_phone: extractPhoneDigits(student.parent_phone),
         email: student.email ?? "",
         address: student.address ?? "",
         status: student.status,
@@ -53,28 +64,48 @@ export function StudentsForm({ student, onClose }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
     setErr(null);
+
+    if (form.phone.length !== 9) {
+      setErr("Введите телефон полностью: 9 цифр");
+      return;
+    }
+    if (form.parent_phone && form.parent_phone.length !== 9) {
+      setErr("Телефон родителя: введите 9 цифр или оставьте пустым");
+      return;
+    }
+
+    setSaving(true);
     try {
       const payload = {
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
         middle_name: form.middle_name.trim() || undefined,
-        phone: form.phone.trim(),
-        parent_phone: form.parent_phone.trim() || undefined,
+        phone: normalizePhone(form.phone),
+        parent_phone: form.parent_phone
+          ? normalizePhone(form.parent_phone)
+          : undefined,
         email: form.email.trim() || undefined,
         address: form.address.trim() || undefined,
         status: form.status,
         notes: form.notes.trim() || undefined,
       };
-      if (isEdit && student) {
-        await update(student.id, payload);
-      } else {
-        await create(payload);
-      }
+
+      if (isEdit && student) await update(student.id, payload);
+      else await create(payload);
       onClose();
     } catch (e: any) {
-      setErr(e?.response?.data?.message ?? "Не удалось сохранить");
+      const details = e?.response?.data?.details;
+      if (details && typeof details === "object") {
+        const [field, msgs] = Object.entries(details)[0] ?? [];
+        setErr(
+          field
+            ? `${field}: ${(msgs as string[]).join(", ")}`
+            : "Ошибка валидации",
+        );
+      } else {
+        setErr(e?.response?.data?.message ?? "Не удалось сохранить");
+      }
     } finally {
       setSaving(false);
     }
@@ -88,7 +119,7 @@ export function StudentsForm({ student, onClose }: Props) {
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
-        className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl"
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
       >
         <h2 className="text-lg font-semibold text-gray-900">
           {isEdit ? "Редактировать студента" : "Новый студент"}
@@ -130,24 +161,24 @@ export function StudentsForm({ student, onClose }: Props) {
               onChange={(e) => set("status", e.target.value as StudentStatus)}
               className={inputCls}
             >
-              <option value="active">Активен</option>
-              <option value="inactive">Неактивен</option>
-              <option value="graduated">Выпускник</option>
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Телефон" required>
-            <input
+            <PhoneInput
               required
               value={form.phone}
-              onChange={(e) => set("phone", e.target.value)}
-              className={inputCls}
+              onChange={(digits) => set("phone", digits)}
             />
           </Field>
           <Field label="Телефон родителя">
-            <input
+            <PhoneInput
               value={form.parent_phone}
-              onChange={(e) => set("parent_phone", e.target.value)}
-              className={inputCls}
+              onChange={(digits) => set("parent_phone", digits)}
             />
           </Field>
           <Field label="Email">
@@ -155,6 +186,10 @@ export function StudentsForm({ student, onClose }: Props) {
               type="email"
               value={form.email}
               onChange={(e) => set("email", e.target.value)}
+              onBlur={() => {
+                const f = formatEmail(form.email);
+                set("email", f === "—" ? "" : f);
+              }}
               className={inputCls}
             />
           </Field>
