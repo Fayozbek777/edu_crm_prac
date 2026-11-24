@@ -8,6 +8,7 @@ import LoginPage from "../../pages/LoginPage/LoginPage";
 import RegisterPage from "../../pages/RegisterPage/RegisterPage";
 import DashboardPage from "../../pages/DashboardPage/DashboardPage";
 import { StudentsPage } from "../../pages/StudentsPage/StudentsPage";
+import CoursesPage from "../../pages/CoursesPage/CoursesPage";
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
       { path: "/", element: <Navigate to="/dashboard" replace /> },
       { path: "/dashboard", element: <DashboardPage /> },
       { path: "/students", element: <StudentsPage /> }, // ✅ добавлено
+      { path: "/courses", element: <CoursesPage /> }, // ✅ добавлено
     ],
   },
   {
