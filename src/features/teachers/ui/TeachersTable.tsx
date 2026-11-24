@@ -1,10 +1,19 @@
 // src/features/teachers/ui/TeachersTable.tsx
-import { useTeachersStore } from "../model/teachers.store";
 import type { Teacher } from "../types/teachers.types";
 import { formatPhone } from "../../../shared/lib/formatPhone";
 import { formatEmail } from "../../../shared/lib/formatEmail";
+import { useRemoveTeacher } from "../model/teacher.queries";
 
 const PAGE_SIZE = 10;
+
+interface Props {
+  items: Teacher[];
+  count: number;
+  page: number;
+  isFetching: boolean;
+  onPageChange: (page: number) => void;
+  onEdit: (t: Teacher) => void;
+}
 
 function RatingBadge({
   rating,
@@ -30,39 +39,22 @@ function RatingBadge({
   );
 }
 
-export function TeachersTable({ onEdit }: { onEdit: (t: Teacher) => void }) {
-  const items = useTeachersStore((s) => s.items);
-  const count = useTeachersStore((s) => s.count);
-  const loading = useTeachersStore((s) => s.loading);
-  const error = useTeachersStore((s) => s.error);
-  const page = useTeachersStore((s) => s.page);
-  const setPage = useTeachersStore((s) => s.setPage);
-  const remove = useTeachersStore((s) => s.remove);
-
+export function TeachersTable({
+  items,
+  count,
+  page,
+  isFetching,
+  onPageChange,
+  onEdit,
+}: Props) {
+  const remove = useRemoveTeacher();
   const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
-
-  if (loading && items.length === 0)
-    return (
-      <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
-        Загрузка…
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {error}
-      </div>
-    );
 
   if (items.length === 0)
     return (
       <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
         <p className="text-sm font-medium text-gray-900">
           Преподавателей не найдено
-        </p>
-        <p className="mt-1 text-sm text-gray-500">
-          Измените фильтры или добавьте нового преподавателя.
         </p>
       </div>
     );
@@ -145,9 +137,11 @@ export function TeachersTable({ onEdit }: { onEdit: (t: Teacher) => void }) {
                   </button>
                   <button
                     onClick={() => {
-                      if (confirm("Удалить преподавателя?")) remove(t.id);
+                      if (confirm("Удалить преподавателя?"))
+                        remove.mutate(t.id);
                     }}
-                    className="ml-2 rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
+                    disabled={remove.isPending}
+                    className="ml-2 rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
                   >
                     Удалить
                   </button>
@@ -161,18 +155,19 @@ export function TeachersTable({ onEdit }: { onEdit: (t: Teacher) => void }) {
       <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
         <span className="text-xs text-gray-500">
           Стр. {page} из {totalPages} · всего {count}
+          {isFetching && <span className="ml-2">обновление…</span>}
         </span>
         <div className="flex gap-2">
           <button
             disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
+            onClick={() => onPageChange(page - 1)}
             className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
           >
             Назад
           </button>
           <button
             disabled={page >= totalPages}
-            onClick={() => setPage(page + 1)}
+            onClick={() => onPageChange(page + 1)}
             className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
           >
             Вперёд

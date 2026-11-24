@@ -1,6 +1,6 @@
 // src/features/teachers/ui/TeachersForm.tsx
 import { useEffect, useState } from "react";
-import { useTeachersStore } from "../model/teachers.store";
+import { useCreateTeacher, useUpdateTeacher } from "../model/teacher.queries";
 import type { Teacher } from "../types/teachers.types";
 import {
   extractPhoneDigits,
@@ -28,11 +28,11 @@ const empty = {
 
 export function TeachersForm({ teacher, onClose }: Props) {
   const isEdit = Boolean(teacher);
-  const create = useTeachersStore((s) => s.create);
-  const update = useTeachersStore((s) => s.update);
+  const createMutation = useCreateTeacher();
+  const updateMutation = useUpdateTeacher();
 
   const [form, setForm] = useState(empty);
-  const [saving, setSaving] = useState(false);
+  const saving = createMutation.isPending || updateMutation.isPending;
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,22 +65,24 @@ export function TeachersForm({ teacher, onClose }: Props) {
       return;
     }
 
-    setSaving(true);
-    try {
-      const payload = {
-        first_name: form.first_name.trim(),
-        last_name: form.last_name.trim(),
-        phone: normalizePhone(form.phone),
-        email: form.email.trim(),
-        specialization: form.specialization.trim(),
-        experience_years: Number(form.experience_years) || 0,
-        is_active: form.is_active,
-        bio: form.bio.trim() || undefined,
-        rating: form.rating.trim() || undefined,
-      };
+    const payload = {
+      first_name: form.first_name.trim(),
+      last_name: form.last_name.trim(),
+      phone: normalizePhone(form.phone),
+      email: form.email.trim(),
+      specialization: form.specialization.trim(),
+      experience_years: Number(form.experience_years) || 0,
+      is_active: form.is_active,
+      bio: form.bio.trim() || undefined,
+      rating: form.rating.trim() || undefined,
+    };
 
-      if (isEdit && teacher) await update(teacher.id, payload);
-      else await create(payload);
+    try {
+      if (isEdit && teacher) {
+        await updateMutation.mutateAsync({ id: teacher.id, data: payload });
+      } else {
+        await createMutation.mutateAsync(payload);
+      }
       onClose();
     } catch (e: any) {
       const details = e?.response?.data?.details;
@@ -94,8 +96,6 @@ export function TeachersForm({ teacher, onClose }: Props) {
       } else {
         setErr(e?.response?.data?.message ?? "Не удалось сохранить");
       }
-    } finally {
-      setSaving(false);
     }
   };
 

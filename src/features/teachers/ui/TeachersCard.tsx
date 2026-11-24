@@ -1,6 +1,6 @@
 // src/features/teachers/ui/TeachersCard.tsx
 import type { Teacher } from "../types/teachers.types";
-import { useTeachersStore } from "../model/teachers.store";
+import { useRemoveTeacher } from "../model/teacher.queries";
 import { formatPhone } from "../../../shared/lib/formatPhone";
 import { formatEmail } from "../../../shared/lib/formatEmail";
 
@@ -17,7 +17,7 @@ export function TeachersCard({
   teacher: Teacher;
   onEdit: (t: Teacher) => void;
 }) {
-  const remove = useTeachersStore((s) => s.remove);
+  const remove = useRemoveTeacher();
   const fullName =
     teacher.full_name || `${teacher.last_name} ${teacher.first_name}`;
 
@@ -84,9 +84,10 @@ export function TeachersCard({
         </button>
         <button
           onClick={() => {
-            if (confirm("Удалить преподавателя?")) remove(teacher.id);
+            if (confirm("Удалить преподавателя?")) remove.mutate(teacher.id);
           }}
-          className="rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
+          disabled={remove.isPending}
+          className="rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
         >
           Удалить
         </button>
