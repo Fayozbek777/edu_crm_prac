@@ -1,19 +1,17 @@
 // src/features/students/ui/StudentsForm.tsx
 import { useEffect, useState } from "react";
-import { useStudentsStore } from "../model/students.store";
+import { useCreateStudent, useUpdateStudent } from "../model/students.queries";
 import type { Student } from "../types/students.types";
 import { STUDENT_STATUS, toOptions } from "../../../shared/constants/statuses";
 import type { StudentStatus } from "../../../shared/constants/statuses";
 import {
   extractPhoneDigits,
-  formatPhone,
   normalizePhone,
 } from "../../../shared/lib/formatPhone";
 import { formatEmail } from "../../../shared/lib/formatEmail";
 import { PhoneInput } from "../../../shared/ui/PhoneInput";
 
 const STATUS_OPTIONS = toOptions(STUDENT_STATUS);
-// [{ value: "ACTIVE", label: "Активен" }, ...]
 
 interface Props {
   student?: Student;
@@ -24,8 +22,8 @@ const empty = {
   first_name: "",
   last_name: "",
   middle_name: "",
-  phone: "", // 9 цифр
-  parent_phone: "", // 9 цифр
+  phone: "",
+  parent_phone: "",
   email: "",
   address: "",
   status: "ACTIVE" as StudentStatus,
@@ -34,12 +32,12 @@ const empty = {
 
 export function StudentsForm({ student, onClose }: Props) {
   const isEdit = Boolean(student);
-  const create = useStudentsStore((s) => s.create);
-  const update = useStudentsStore((s) => s.update);
+  const createMutation = useCreateStudent();
+  const updateMutation = useUpdateStudent();
+  const saving = createMutation.isPending || updateMutation.isPending; // ✅ один saving
 
   const [form, setForm] = useState(empty);
-  const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null); // ✅ без saving в useState
 
   useEffect(() => {
     if (student) {
@@ -75,24 +73,26 @@ export function StudentsForm({ student, onClose }: Props) {
       return;
     }
 
-    setSaving(true);
-    try {
-      const payload = {
-        first_name: form.first_name.trim(),
-        last_name: form.last_name.trim(),
-        middle_name: form.middle_name.trim() || undefined,
-        phone: normalizePhone(form.phone),
-        parent_phone: form.parent_phone
-          ? normalizePhone(form.parent_phone)
-          : undefined,
-        email: form.email.trim() || undefined,
-        address: form.address.trim() || undefined,
-        status: form.status,
-        notes: form.notes.trim() || undefined,
-      };
+    const payload = {
+      first_name: form.first_name.trim(),
+      last_name: form.last_name.trim(),
+      middle_name: form.middle_name.trim() || undefined,
+      phone: normalizePhone(form.phone),
+      parent_phone: form.parent_phone
+        ? normalizePhone(form.parent_phone)
+        : undefined,
+      email: form.email.trim() || undefined,
+      address: form.address.trim() || undefined,
+      status: form.status,
+      notes: form.notes.trim() || undefined,
+    };
 
-      if (isEdit && student) await update(student.id, payload);
-      else await create(payload);
+    try {
+      if (isEdit && student) {
+        await updateMutation.mutateAsync({ id: student.id, data: payload }); // ✅
+      } else {
+        await createMutation.mutateAsync(payload); // ✅
+      }
       onClose();
     } catch (e: any) {
       const details = e?.response?.data?.details;
@@ -106,8 +106,6 @@ export function StudentsForm({ student, onClose }: Props) {
       } else {
         setErr(e?.response?.data?.message ?? "Не удалось сохранить");
       }
-    } finally {
-      setSaving(false);
     }
   };
 

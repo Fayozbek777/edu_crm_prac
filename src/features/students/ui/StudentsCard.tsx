@@ -1,9 +1,15 @@
 // src/features/students/ui/StudentsCard.tsx
 import type { Student } from "../types/students.types";
-import { useStudentsStore } from "../model/students.store";
+import { useRemoveStudent } from "../model/students.queries";
 
-export function StudentsCard({ student }: { student: Student }) {
-  const remove = useStudentsStore((s) => s.remove);
+export function StudentsCard({
+  student,
+  onEdit,
+}: {
+  student: Student;
+  onEdit: (s: Student) => void;
+}) {
+  const remove = useRemoveStudent();
 
   return (
     <article className="rounded-xl border border-gray-200 bg-white p-4">
@@ -16,14 +22,23 @@ export function StudentsCard({ student }: { student: Student }) {
             {student.specialization ?? "Студент"} · ID {student.id}
           </p>
         </div>
-        <button
-          onClick={() => {
-            if (confirm("Удалить студента?")) remove(student.id);
-          }}
-          className="text-xs font-medium text-red-600 transition hover:text-red-700"
-        >
-          Удалить
-        </button>
+        <div className="flex shrink-0 gap-2">
+          <button
+            onClick={() => onEdit(student)}
+            className="text-xs font-medium text-gray-600 transition hover:text-gray-900"
+          >
+            Изменить
+          </button>
+          <button
+            onClick={() => {
+              if (confirm("Удалить студента?")) remove.mutate(student.id);
+            }}
+            disabled={remove.isPending}
+            className="text-xs font-medium text-red-600 transition hover:text-red-700 disabled:opacity-50"
+          >
+            Удалить
+          </button>
+        </div>
       </div>
 
       <dl className="mt-3 grid grid-cols-1 gap-1 text-xs text-gray-600">
