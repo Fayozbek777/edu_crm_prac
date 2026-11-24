@@ -1,40 +1,30 @@
 // src/features/courses/ui/CoursesFilters.tsx
 import { useEffect, useState } from "react";
-import { useCoursesStore } from "../model/courses.store";
 import { COURSE_LEVEL, toOptions } from "../../../shared/constants/statuses";
 import type { CourseLevel } from "../../../shared/constants/statuses";
+import type { CourseListParams } from "../types/courses.types";
 import { useDebounce } from "../../../shared/hooks/useDebounce";
 
 const LEVEL_OPTIONS = toOptions(COURSE_LEVEL);
-// [{ value: "BEGINNER", label: "Начальный" }, ...]
-
 const ACTIVE_OPTIONS = [
   { value: "", label: "Все" },
   { value: "true", label: "Активные" },
   { value: "false", label: "Неактивные" },
 ];
 
-export function CoursesFilters() {
-  const level = useCoursesStore((s) => s.level);
-  const is_active = useCoursesStore((s) => s.is_active);
-  const ordering = useCoursesStore((s) => s.ordering);
-  const storeSearch = useCoursesStore((s) => s.search);
+interface Props {
+  params: CourseListParams;
+  onChange: (next: CourseListParams) => void;
+}
 
-  const setSearch = useCoursesStore((s) => s.setSearch);
-  const setLevel = useCoursesStore((s) => s.setLevel);
-  const setIsActive = useCoursesStore((s) => s.setIsActive);
-  const setOrdering = useCoursesStore((s) => s.setOrdering);
-
-  const [input, setInput] = useState(storeSearch);
+export function CoursesFilters({ params, onChange }: Props) {
+  const [input, setInput] = useState(params.search ?? "");
   const debounced = useDebounce(input, 400);
 
   useEffect(() => {
-    if (debounced !== storeSearch) setSearch(debounced);
-  }, [debounced, storeSearch, setSearch]);
-
-  useEffect(() => {
-    setInput(storeSearch);
-  }, [storeSearch]);
+    if ((params.search ?? "") === debounced) return;
+    onChange({ ...params, search: debounced || undefined, page: 1 });
+  }, [debounced]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -47,9 +37,13 @@ export function CoursesFilters() {
       />
 
       <select
-        value={level ?? ""}
+        value={params.level ?? ""}
         onChange={(e) =>
-          setLevel((e.target.value || undefined) as CourseLevel | undefined)
+          onChange({
+            ...params,
+            level: (e.target.value || undefined) as CourseLevel | undefined,
+            page: 1,
+          })
         }
         className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-[var(--color-primary)] focus:outline-none"
       >
@@ -62,10 +56,14 @@ export function CoursesFilters() {
       </select>
 
       <select
-        value={is_active === undefined ? "" : String(is_active)}
+        value={params.is_active === undefined ? "" : String(params.is_active)}
         onChange={(e) => {
           const v = e.target.value;
-          setIsActive(v === "" ? undefined : v === "true");
+          onChange({
+            ...params,
+            is_active: v === "" ? undefined : v === "true",
+            page: 1,
+          });
         }}
         className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-[var(--color-primary)] focus:outline-none"
       >
@@ -77,8 +75,10 @@ export function CoursesFilters() {
       </select>
 
       <select
-        value={ordering}
-        onChange={(e) => setOrdering(e.target.value)}
+        value={params.ordering ?? "-created_at"}
+        onChange={(e) =>
+          onChange({ ...params, ordering: e.target.value, page: 1 })
+        }
         className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-[var(--color-primary)] focus:outline-none"
       >
         <option value="-created_at">Новые сначала</option>

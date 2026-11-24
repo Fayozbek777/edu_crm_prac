@@ -1,9 +1,13 @@
 // src/features/teachers/index.ts
+export {
+  useTeachersList,
+  useTeacher,
+  useCreateTeacher,
+  useUpdateTeacher,
+  useRemoveTeacher,
+  teachersKeys,
+} from "./model/teacher.queries";
 
-// model
-export { useTeachersStore } from "./model/teachers.store";
-
-// types
 export type {
   Teacher,
   TeacherListParams,
@@ -12,7 +16,6 @@ export type {
   UpdateTeacherPayload,
 } from "./types/teachers.types";
 
-// ui
 export { TeachersTable } from "./ui/TeachersTable";
 export { TeachersFilters } from "./ui/TeachersFilters";
 export { TeachersForm } from "./ui/TeachersForm";

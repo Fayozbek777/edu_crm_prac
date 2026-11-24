@@ -1,11 +1,20 @@
 // src/features/students/ui/StudentsTable.tsx
-import { useStudentsStore } from "../model/students.store";
 import type { Student } from "../types/students.types";
 import { STUDENT_STATUS } from "../../../shared/constants/statuses";
 import { formatPhone } from "../../../shared/lib/formatPhone";
 import { formatEmail } from "../../../shared/lib/formatEmail";
+import { useRemoveStudent } from "../model/students.queries";
 
 const PAGE_SIZE = 10;
+
+interface Props {
+  items: Student[];
+  count: number;
+  page: number;
+  isFetching: boolean;
+  onPageChange: (page: number) => void;
+  onEdit: (s: Student) => void;
+}
 
 function StatusBadge({ status }: { status: Student["status"] }) {
   const color: Record<string, string> = {
@@ -25,32 +34,18 @@ function StatusBadge({ status }: { status: Student["status"] }) {
   );
 }
 
-export function StudentsTable({ onEdit }: { onEdit: (s: Student) => void }) {
-  const items = useStudentsStore((s) => s.items);
-  const count = useStudentsStore((s) => s.count);
-  const loading = useStudentsStore((s) => s.loading);
-  const error = useStudentsStore((s) => s.error);
-  const page = useStudentsStore((s) => s.page);
-  const setPage = useStudentsStore((s) => s.setPage);
-  const remove = useStudentsStore((s) => s.remove);
-
+export function StudentsTable({
+  items,
+  count,
+  page,
+  isFetching,
+  onPageChange,
+  onEdit,
+}: Props) {
+  const remove = useRemoveStudent();
   const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
 
-  if (loading && items.length === 0)
-    return (
-      <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
-        Загрузка…
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {error}
-      </div>
-    );
-
-  if (items.length === 0)
+  if (items.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
         <p className="text-sm font-medium text-gray-900">
@@ -58,6 +53,7 @@ export function StudentsTable({ onEdit }: { onEdit: (s: Student) => void }) {
         </p>
       </div>
     );
+  }
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -114,9 +110,10 @@ export function StudentsTable({ onEdit }: { onEdit: (s: Student) => void }) {
                   </button>
                   <button
                     onClick={() => {
-                      if (confirm("Удалить студента?")) remove(s.id);
+                      if (confirm("Удалить студента?")) remove.mutate(s.id);
                     }}
-                    className="ml-2 rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
+                    disabled={remove.isPending}
+                    className="ml-2 rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
                   >
                     Удалить
                   </button>
@@ -129,18 +126,19 @@ export function StudentsTable({ onEdit }: { onEdit: (s: Student) => void }) {
       <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
         <span className="text-xs text-gray-500">
           Стр. {page} из {totalPages} · всего {count}
+          {isFetching && <span className="ml-2">обновление…</span>}
         </span>
         <div className="flex gap-2">
           <button
             disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
+            onClick={() => onPageChange(page - 1)}
             className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
           >
             Назад
           </button>
           <button
             disabled={page >= totalPages}
-            onClick={() => setPage(page + 1)}
+            onClick={() => onPageChange(page + 1)}
             className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
           >
             Вперёд

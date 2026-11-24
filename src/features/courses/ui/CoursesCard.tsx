@@ -1,7 +1,7 @@
 // src/features/courses/ui/CoursesCard.tsx
 import { COURSE_LEVEL } from "../../../shared/constants/statuses";
 import type { Course } from "../types/courses.types";
-import { useCoursesStore } from "../model/courses.store";
+import { useRemoveCourse } from "../model/courses.queries";
 
 function formatPrice(raw: string | number | null | undefined): string {
   if (raw === null || raw === undefined || raw === "") return "—";
@@ -17,7 +17,7 @@ export function CoursesCard({
   course: Course;
   onEdit: (c: Course) => void;
 }) {
-  const remove = useCoursesStore((s) => s.remove);
+  const remove = useRemoveCourse();
 
   return (
     <article className="rounded-xl border border-gray-200 bg-white p-4">
@@ -75,9 +75,10 @@ export function CoursesCard({
         </button>
         <button
           onClick={() => {
-            if (confirm("Удалить курс?")) remove(course.id);
+            if (confirm("Удалить курс?")) remove.mutate(course.id);
           }}
-          className="rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
+          disabled={remove.isPending}
+          className="rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
         >
           Удалить
         </button>

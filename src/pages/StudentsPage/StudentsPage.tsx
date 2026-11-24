@@ -1,36 +1,37 @@
-// src/pages/StudentsPage.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { StudentsCard } from "../../features/students/ui/StudentsCard";
 import { StudentsFilters } from "../../features/students/ui/StudentsFilters";
 import { StudentsForm } from "../../features/students/ui/StudentsForm";
 import { StudentsTable } from "../../features/students/ui/StudentsTable";
-import type { Student } from "../../features/students/types/students.types";
-import { useStudentsStore } from "../../features/students";
+import type {
+  Student,
+  StudentsListParams,
+} from "../../features/students/types/students.types";
+import { useStudentsList } from "../../features/students/model/students.queries";
 
 export function StudentsPage() {
-  const fetch = useStudentsStore((s) => s.fetch);
-  const items = useStudentsStore((s) => s.items);
-  const loading = useStudentsStore((s) => s.loading);
-  const error = useStudentsStore((s) => s.error);
+  const [params, setParams] = useState<StudentsListParams>({
+    page: 1,
+    ordering: "-created_at",
+  });
+
+  const { data, isLoading, isFetching, error, refetch } =
+    useStudentsList(params);
+
+  const items = data?.results ?? [];
+  const count = data?.count ?? 0;
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<Student | undefined>(undefined);
-
-  // Первичная загрузка. Дальше фильтры сами дергают fetch.
-  useEffect(() => {
-    fetch();
-  }, [fetch]);
 
   const openCreate = () => {
     setEditing(undefined);
     setIsFormOpen(true);
   };
-
   const openEdit = (student: Student) => {
     setEditing(student);
     setIsFormOpen(true);
   };
-
   const closeForm = () => {
     setIsFormOpen(false);
     setEditing(undefined);
@@ -46,27 +47,37 @@ export function StudentsPage() {
             Управление карточками студентов
           </p>
         </div>
-        <button
-          onClick={openCreate}
-          className="inline-flex items-center justify-center rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--color-primary-hover)]"
-        >
-          + Добавить студента
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="inline-flex items-center justify-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+          >
+            Обновить
+          </button>
+          <button
+            onClick={openCreate}
+            className="inline-flex items-center justify-center rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--color-primary-hover)]"
+          >
+            + Добавить студента
+          </button>
+        </div>
       </div>
 
       {/* Фильтры */}
       <div className="mb-4">
-        <StudentsFilters />
+        <StudentsFilters params={params} onChange={setParams} />
       </div>
 
-      {/* Контент: состояния + таблица/карточки */}
+      {/* Ошибка */}
       {error && (
         <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {error}
+          {(error as any)?.response?.data?.message ?? "Ошибка загрузки"}
         </div>
       )}
 
-      {loading && items.length === 0 ? (
+      {/* Контент */}
+      {isLoading ? (
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
           Загрузка…
         </div>
@@ -89,7 +100,14 @@ export function StudentsPage() {
         <>
           {/* Десктоп: таблица */}
           <div className="hidden md:block">
-            <StudentsTable onEdit={openEdit} />
+            <StudentsTable
+              items={items}
+              count={count}
+              page={params.page ?? 1}
+              isFetching={isFetching}
+              onPageChange={(page) => setParams((p) => ({ ...p, page }))}
+              onEdit={openEdit}
+            />
           </div>
 
           {/* Мобилка: карточки */}
@@ -101,7 +119,7 @@ export function StudentsPage() {
         </>
       )}
 
-      {/* Модалка создания/редактирования */}
+      {/* Модалка */}
       {isFormOpen && <StudentsForm student={editing} onClose={closeForm} />}
     </div>
   );

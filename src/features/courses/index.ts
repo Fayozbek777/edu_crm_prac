@@ -1,5 +1,12 @@
-// model
-export { useCoursesStore } from "./model/courses.store";
+// src/features/courses/index.ts
+export {
+  useCoursesList,
+  useCourse,
+  useCreateCourse,
+  useUpdateCourse,
+  useRemoveCourse,
+  coursesKeys,
+} from "./model/courses.queries";
 
 export type {
   Course,
@@ -9,7 +16,6 @@ export type {
   UpdateCoursePayload,
 } from "./types/courses.types";
 
-// ui
 export { CoursesTable } from "./ui/CoursesTable";
 export { CoursesFilters } from "./ui/CoursesFilters";
 export { CoursesForm } from "./ui/CoursesForm";

@@ -1,6 +1,6 @@
 // src/features/teachers/ui/TeachersFilters.tsx
 import { useEffect, useState } from "react";
-import { useTeachersStore } from "../model/teachers.store";
+import type { TeacherListParams } from "../types/teachers.types";
 import { useDebounce } from "../../../shared/hooks/useDebounce";
 
 const ACTIVE_OPTIONS = [
@@ -9,25 +9,19 @@ const ACTIVE_OPTIONS = [
   { value: "false", label: "Неактивные" },
 ];
 
-export function TeachersFilters() {
-  const is_active = useTeachersStore((s) => s.is_active);
-  const ordering = useTeachersStore((s) => s.ordering);
-  const storeSearch = useTeachersStore((s) => s.search);
+interface Props {
+  params: TeacherListParams;
+  onChange: (next: TeacherListParams) => void;
+}
 
-  const setSearch = useTeachersStore((s) => s.setSearch);
-  const setIsActive = useTeachersStore((s) => s.setIsActive);
-  const setOrdering = useTeachersStore((s) => s.setOrdering);
-
-  const [input, setInput] = useState(storeSearch);
+export function TeachersFilters({ params, onChange }: Props) {
+  const [input, setInput] = useState(params.search ?? "");
   const debounced = useDebounce(input, 400);
 
   useEffect(() => {
-    if (debounced !== storeSearch) setSearch(debounced);
-  }, [debounced, storeSearch, setSearch]);
-
-  useEffect(() => {
-    setInput(storeSearch);
-  }, [storeSearch]);
+    if ((params.search ?? "") === debounced) return;
+    onChange({ ...params, search: debounced || undefined, page: 1 });
+  }, [debounced]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -40,10 +34,14 @@ export function TeachersFilters() {
       />
 
       <select
-        value={is_active === undefined ? "" : String(is_active)}
+        value={params.is_active === undefined ? "" : String(params.is_active)}
         onChange={(e) => {
           const v = e.target.value;
-          setIsActive(v === "" ? undefined : v === "true");
+          onChange({
+            ...params,
+            is_active: v === "" ? undefined : v === "true",
+            page: 1,
+          });
         }}
         className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-[var(--color-primary)] focus:outline-none"
       >
@@ -55,8 +53,10 @@ export function TeachersFilters() {
       </select>
 
       <select
-        value={ordering}
-        onChange={(e) => setOrdering(e.target.value)}
+        value={params.ordering ?? "-created_at"}
+        onChange={(e) =>
+          onChange({ ...params, ordering: e.target.value, page: 1 })
+        }
         className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-[var(--color-primary)] focus:outline-none"
       >
         <option value="-created_at">Новые сначала</option>

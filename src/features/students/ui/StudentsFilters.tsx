@@ -1,33 +1,25 @@
 // src/features/students/ui/StudentsFilters.tsx
 import { useEffect, useState } from "react";
-import { useStudentsStore } from "../model/students.store";
 import { STUDENT_STATUS, toOptions } from "../../../shared/constants/statuses";
 import type { StudentStatus } from "../../../shared/constants/statuses";
+import type { StudentsListParams } from "../types/students.types";
 import { useDebounce } from "../../../shared/hooks/useDebounce";
 
 const STATUS_OPTIONS = toOptions(STUDENT_STATUS);
-// [{ value: "ACTIVE", label: "Активен" }, ...]
 
-export function StudentsFilters() {
-  const status = useStudentsStore((s) => s.status);
-  const ordering = useStudentsStore((s) => s.ordering);
-  const storeSearch = useStudentsStore((s) => s.search);
+interface Props {
+  params: StudentsListParams;
+  onChange: (next: StudentsListParams) => void;
+}
 
-  const setSearch = useStudentsStore((s) => s.setSearch);
-  const setStatus = useStudentsStore((s) => s.setStatus);
-  const setOrdering = useStudentsStore((s) => s.setOrdering);
-
-  // локальный инпут + debounce, чтобы не гонять fetch на каждый символ
-  const [input, setInput] = useState(storeSearch);
+export function StudentsFilters({ params, onChange }: Props) {
+  const [input, setInput] = useState(params.search ?? "");
   const debounced = useDebounce(input, 400);
 
   useEffect(() => {
-    if (debounced !== storeSearch) setSearch(debounced);
-  }, [debounced, storeSearch, setSearch]);
-
-  useEffect(() => {
-    setInput(storeSearch);
-  }, [storeSearch]);
+    if ((params.search ?? "") === debounced) return;
+    onChange({ ...params, search: debounced || undefined, page: 1 });
+  }, [debounced]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -44,11 +36,15 @@ export function StudentsFilters() {
         </label>
 
         <select
-          value={status ?? ""}
+          value={params.status ?? ""}
           onChange={(e) =>
-            setStatus(
-              (e.target.value || undefined) as StudentStatus | undefined,
-            )
+            onChange({
+              ...params,
+              status: (e.target.value || undefined) as
+                | StudentStatus
+                | undefined,
+              page: 1,
+            })
           }
           className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-[var(--color-primary)] focus:outline-none"
         >
@@ -61,8 +57,10 @@ export function StudentsFilters() {
         </select>
 
         <select
-          value={ordering}
-          onChange={(e) => setOrdering(e.target.value)}
+          value={params.ordering ?? "-created_at"}
+          onChange={(e) =>
+            onChange({ ...params, ordering: e.target.value, page: 1 })
+          }
           className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-[var(--color-primary)] focus:outline-none"
         >
           <option value="-created_at">Новые сначала</option>
