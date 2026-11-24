@@ -1,6 +1,6 @@
 // src/features/courses/ui/CoursesForm.tsx
 import { useEffect, useState } from "react";
-import { useCoursesStore } from "../model/courses.store";
+import { useCreateCourse, useUpdateCourse } from "../model/courses.queries";
 import type { Course } from "../types/courses.types";
 import { COURSE_LEVEL, toOptions } from "../../../shared/constants/statuses";
 import type { CourseLevel } from "../../../shared/constants/statuses";
@@ -24,11 +24,11 @@ const empty = {
 
 export function CoursesForm({ course, onClose }: Props) {
   const isEdit = Boolean(course);
-  const create = useCoursesStore((s) => s.create);
-  const update = useCoursesStore((s) => s.update);
+  const createMutation = useCreateCourse(); // ✅
+  const updateMutation = useUpdateCourse(); // ✅
+  const saving = createMutation.isPending || updateMutation.isPending;
 
   const [form, setForm] = useState(empty);
-  const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,20 +63,22 @@ export function CoursesForm({ course, onClose }: Props) {
       return;
     }
 
-    setSaving(true);
-    try {
-      const payload = {
-        title: form.title.trim(),
-        description: form.description.trim() || null,
-        level: form.level,
-        price: form.price, // строка для DecimalField
-        duration_months: Number(form.duration_months) || 0,
-        lessons_count: Number(form.lessons_count) || 0,
-        is_active: form.is_active,
-      };
+    const payload = {
+      title: form.title.trim(),
+      description: form.description.trim() || null,
+      level: form.level,
+      price: form.price,
+      duration_months: Number(form.duration_months) || 0,
+      lessons_count: Number(form.lessons_count) || 0,
+      is_active: form.is_active,
+    };
 
-      if (isEdit && course) await update(course.id, payload);
-      else await create(payload);
+    try {
+      if (isEdit && course) {
+        await updateMutation.mutateAsync({ id: course.id, data: payload }); // ✅
+      } else {
+        await createMutation.mutateAsync(payload); // ✅
+      }
       onClose();
     } catch (e: any) {
       const details = e?.response?.data?.details;
@@ -90,8 +92,6 @@ export function CoursesForm({ course, onClose }: Props) {
       } else {
         setErr(e?.response?.data?.message ?? "Не удалось сохранить");
       }
-    } finally {
-      setSaving(false);
     }
   };
 
