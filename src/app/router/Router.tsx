@@ -10,6 +10,7 @@ import DashboardPage from "../../pages/DashboardPage/DashboardPage";
 import { StudentsPage } from "../../pages/StudentsPage/StudentsPage";
 import CoursesPage from "../../pages/CoursesPage/CoursesPage";
 import TeachersPage from "../../pages/TeachersPage/TeachersPage";
+import GroupsPage from "../../pages/GroupsPage/GroupsPage";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
       { path: "/students", element: <StudentsPage /> }, // ✅ добавлено
       { path: "/courses", element: <CoursesPage /> }, // ✅ добавлено
       { path: "/teachers", element: <TeachersPage /> }, // ✅ добавлено
+      { path: "/groups", element: <GroupsPage /> }, // ✅ добавлено
     ],
   },
   {
