@@ -1,3 +1,20 @@
+# 🎓 Edu CRM — Frontend
+
+| Категория | Технологии |
+| :--- | :--- |
+| **Core** | `React` • `TypeScript` • `Vite` |
+| **Архитектура** | `Feature-Sliced Design (FSD)` |
+| **Стейт-менеджмент и запросы** | `Zustand` • `TanStack Query` • `Axios` |
+| **Маршрутизация** | `React Router DOM` |
+| **Формы и валидация** | `React Hook Form` • `Zod` |
+| **Стилизация и UI** | `Tailwind CSS v4` • `shadcn/ui` • `Framer Motion` • `Lucide Icons` • `Sonner` |
+| **Утилиты и данные** | `date-fns` • `Usefy Pagination` • `Email-Handler` |
+| **Инструменты разработки** | `ESLint` • `npm` • `Git` • `Git Flow` |
+
+
+
+
+
 <pre>
 edu_crm_front/
 ├── .env
